@@ -1,65 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import './ScrollComponent.css'; // Import your CSS file for styling
+import React, { useState, useEffect } from "react";
+// import axios from 'axios';
 
-const ScrollComponent = () => {
+const ScrollComponent = ({ url }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [scrollDirection, setScrollDirection] = useState('down'); // or 'up'
+  const [page, setPage] = useState(1);
 
-  const handleScroll = () => {
-    const scrollTop = document.documentElement.scrollTop;
+  const fetchData = async (newPage) => {
+    try {
+      setLoading(true);
 
-    if (scrollTop === 0) {
-      setScrollDirection('up');
-    } else {
-      setScrollDirection('down');
+      // Make an API request to fetch data based on the newPage value
+      const response = await fetch(url);
+      const newData = await response.json();
+      console.log(url, newData);
+      // Update the state with the new data
+      if (newPage === 1) {
+        // If new data is fetched at the top, prepend it to the existing data
+        setData((prevData) => [...newData?.results, ...prevData]);
+      } else {
+        // If new data is fetched at the bottom, append it to the existing data
+        setData((prevData) => [...prevData, ...newData?.results]);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchData = async () => {
-    // Simulate fetching data from an API
-    setLoading(true);
+  const handleScroll = () => {
+    const scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    const scrollHeight =
+      document.documentElement.scrollHeight || document.body.scrollHeight;
+    const clientHeight =
+      document.documentElement.clientHeight || window.innerHeight;
 
-    // Fetch data based on scroll direction
-    const newData = await fetchDataBasedOnScrollDirection();
+    // Check if the user has scrolled to the bottom of the page
+    if (scrollTop + clientHeight >= scrollHeight - 100 && !loading) {
+      setPage((prevPage) => prevPage + 1);
+    }
 
-    setData((prevData) =>
-      scrollDirection === 'down' ? [...prevData, ...newData] : [...newData, ...prevData]
-    );
-
-    setLoading(false);
-  };
-
-  const fetchDataBasedOnScrollDirection = () => {
-    // Replace this with your actual data fetching logic
-    // For demonstration purposes, just returning a promise after a timeout
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(['New Item 1', 'New Item 2', 'New Item 3']);
-      }, 1000);
-    });
+    // Check if the user has scrolled to the top of the page
+    if (scrollTop <= 100 && !loading && page > 1) {
+      setPage((prevPage) => prevPage - 1);
+    }
   };
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
+    // Attach the scroll event listener
+    window.addEventListener("scroll", handleScroll);
 
+    // Fetch initial data when the component mounts
+    fetchData(page);
+
+    // Detach the scroll event listener when the component unmounts
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [scrollDirection]); // Fetch data when scroll direction changes
+  }, [page]); // Re-run the effect when the 'page' state changes
 
   return (
-    <div className="scroll-container">
-      <div className="scroll-content">
-        {data.map((item, index) => (
-          <p key={index}>{item}</p>
-        ))}
-        {loading && <p>Loading...</p>}
-      </div>
+    <div>
+      {/* Render your data here */}
+      {data?.map((item, index) => (
+        <div key={index}>{item?.original_title}</div>
+        // Adjust the rendering based on your data structure
+      ))}
+
+      {/* Optional: Display a loading indicator */}
+      {loading && <p>Loading...</p>}
     </div>
   );
 };

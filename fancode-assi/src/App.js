@@ -13,26 +13,27 @@ function App() {
         `https://api.themoviedb.org/3/discover/movie?api_key=2dca580c2a14b55200e784d157207b4d&sort_by=popularity.desc&primary_release_year=${RELEASE_YEAR}&page=1&vote_count.gte=100`
       );
       let data = await res.json();
-      console.log(data);
       setDb(data?.results);
     };
     a();
   }, []);
 
-  console.log(db);
+  // console.log(db);
   return (
-    // <div className="container">
-    //   <div className="header">
-    //     <div>Header</div>
-    //     <div className="nav-bar">Nav Bar</div>
-    //   </div>
-    //   <div className="scroll-content">
-    //     {db?.map((element, index) => (
-    //       <p key={index}>{element?.original_title}</p>
-    //     ))}
-    //   </div>
-    // </div>
-    <ScrollComponent />
+    <div className="container">
+      {/* <div className="header">
+        <div>Header</div>
+        <div className="nav-bar">Nav Bar</div>
+      </div>
+      <div className="scroll-content">
+        {db?.map((element, index) => (
+          <p key={index}>{element?.original_title}</p>
+        ))}
+      </div> */}
+      <ScrollComponent
+        url={`https://api.themoviedb.org/3/discover/movie?api_key=2dca580c2a14b55200e784d157207b4d&sort_by=popularity.desc&primary_release_year=${RELEASE_YEAR}&page=1&vote_count.gte=100`}
+      />
+    </div>
   );
 }
 
